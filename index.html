@@ -159,6 +159,16 @@
     const db = getFirestore(app);
     const submissionsRef = collection(db, "submissions");
 
+    const CONFIG_LOOKS_UNSET = !firebaseConfig.apiKey || firebaseConfig.apiKey.includes('YOUR_')
+      || !firebaseConfig.projectId || firebaseConfig.projectId.includes('YOUR_');
+
+    function withTimeout(promise, ms, label){
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject({ code: 'timeout', message: label }), ms)),
+      ]);
+    }
+
     // ---------- drawing ----------
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -297,6 +307,12 @@
         menuNameEl.focus();
         return;
       }
+      if (CONFIG_LOOKS_UNSET){
+        statusLine.textContent = 'firebase-config.js에 아직 실제 값이 없어요. Firebase 콘솔에서 복사한 설정을 넣어주세요.';
+        statusLine.className = 'status err';
+        return;
+      }
+
       submitBtn.disabled = true;
       statusLine.textContent = '제출 중...';
       statusLine.className = 'status';
@@ -304,15 +320,19 @@
       const dataUrl = exportSmallImage(480);
 
       try {
-        await addDoc(submissionsRef, {
-          name: menuNameEl.value.trim(),
-          korean: koreanEl.value.trim(),
-          culture: cultureEl.value.trim(),
-          desc: descEl.value.trim(),
-          country: countryEl.value.trim(),
-          image: dataUrl,
-          createdAt: serverTimestamp(),
-        });
+        await withTimeout(
+          addDoc(submissionsRef, {
+            name: menuNameEl.value.trim(),
+            korean: koreanEl.value.trim(),
+            culture: cultureEl.value.trim(),
+            desc: descEl.value.trim(),
+            country: countryEl.value.trim(),
+            image: dataUrl,
+            createdAt: serverTimestamp(),
+          }),
+          8000,
+          '8초 안에 응답이 없어요. Firebase 설정(config 값, Firestore 규칙)이나 네트워크를 확인해주세요.'
+        );
         statusLine.textContent = '제출 완료!';
         statusLine.className = 'status ok';
         showToast();
@@ -321,7 +341,8 @@
         menuNameEl.focus();
       } catch(err){
         console.error(err);
-        statusLine.textContent = '제출에 실패했어요. 다시 시도해주세요. (' + (err.code||'error') + ')';
+        const detail = err.code === 'timeout' ? err.message : (err.message || err.code || 'error');
+        statusLine.textContent = '제출에 실패했어요: ' + detail;
         statusLine.className = 'status err';
       } finally {
         submitBtn.disabled = false;

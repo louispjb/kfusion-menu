@@ -137,6 +137,13 @@
     const db = getFirestore(app);
     const submissionsRef = collection(db, "submissions");
 
+    const CONFIG_LOOKS_UNSET = !firebaseConfig.apiKey || firebaseConfig.apiKey.includes('YOUR_')
+      || !firebaseConfig.projectId || firebaseConfig.projectId.includes('YOUR_');
+    if (CONFIG_LOOKS_UNSET){
+      document.getElementById('gallery').innerHTML =
+        '<div class="empty">firebase-config.js에 아직 실제 값이 없어요. Firebase 콘솔에서 복사한 설정을 넣어주세요.</div>';
+    }
+
     // ---------- QR / join box ----------
     const siteUrlInput = document.getElementById('siteUrl');
     const qrImg = document.getElementById('qrImg');
@@ -187,14 +194,16 @@
       });
     }
 
-    const q = query(submissionsRef, orderBy('createdAt', 'asc'));
-    onSnapshot(q, (snap) => {
-      entries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderGallery();
-    }, (err) => {
-      console.error(err);
-      galleryEl.innerHTML = '<div class="empty">연결에 문제가 있어요: ' + err.code + '</div>';
-    });
+    if (!CONFIG_LOOKS_UNSET){
+      const q = query(submissionsRef, orderBy('createdAt', 'asc'));
+      onSnapshot(q, (snap) => {
+        entries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderGallery();
+      }, (err) => {
+        console.error(err);
+        galleryEl.innerHTML = '<div class="empty">연결에 문제가 있어요: ' + err.code + '</div>';
+      });
+    }
 
     document.getElementById('resetAllBtn').addEventListener('click', async () => {
       if (!confirm('제출된 모든 메뉴를 삭제할까요? 되돌릴 수 없어요.')) return;
