@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>K-퓨전 메뉴 발표 화면</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&family=Nanum+Pen+Script&display=swap">
+<style>
+  :root{
+    --bg:#FBF6EE; --surface:#FFFFFF; --surface-2:#F3E9DA;
+    --ink:#2B2320; --ink-soft:#6B5C4F;
+    --accent:#C1432E; --accent-ink:#FFFFFF;
+    --teal:#1F7A6C; --gold:#D9A441; --line:#E7DAC6;
+    --shadow: 0 10px 28px -14px rgba(43,35,32,.35);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink); }
+  body{
+    font-family:'Noto Sans KR',sans-serif;
+    padding-inline:28px; padding-block:26px;
+    display:flex; flex-direction:column; gap:22px;
+    max-width:1280px; margin-inline:auto; min-height:100dvh;
+  }
+  .topbar{ display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; }
+  h1{ font-family:'Gowun Batang',serif; font-size:clamp(24px,3.4vw,34px); margin:0; }
+  h1 span{ color:var(--accent); }
+  .eyebrow{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); font-weight:700; margin-bottom:4px; }
+
+  .joinbox{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px 18px;
+    display:flex; align-items:center; gap:14px; box-shadow:var(--shadow);
+  }
+  .joinbox img{ width:84px; height:84px; border-radius:10px; }
+  .joinbox .urlrow{ display:flex; gap:8px; align-items:center; }
+  .joinbox input{
+    font-family:monospace; font-size:13px; padding:8px 10px; border-radius:8px;
+    border:1px solid var(--line); background:var(--bg); color:var(--ink); width:220px;
+  }
+  .joinbox button{
+    border:1px solid var(--line); background:var(--surface-2); border-radius:8px; padding:8px 12px;
+    font-family:inherit; font-size:13px; cursor:pointer;
+  }
+  .joinbox .label{ font-size:12px; color:var(--ink-soft); font-weight:700; margin-bottom:4px; }
+
+  .galleryhead{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  .count{ color:var(--ink-soft); font-size:14px; font-weight:700; }
+  .resetbtn{
+    border:1px solid var(--line); background:var(--surface); color:var(--accent); font-weight:700;
+    border-radius:999px; padding:8px 16px; font-size:13px; cursor:pointer; font-family:inherit;
+  }
+
+  .gallery{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:16px; }
+  .empty{
+    grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--ink-soft); font-size:16px;
+    border:1px dashed var(--line); border-radius:16px;
+  }
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    box-shadow:var(--shadow); cursor:pointer; display:flex; flex-direction:column; animation:pop .3s ease;
+  }
+  @keyframes pop{ from{opacity:0; transform:scale(.94);} to{opacity:1; transform:scale(1);} }
+  .card img{ width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:#FFFDF9; }
+  .card .cardbody{ padding:10px 12px 12px; display:flex; flex-direction:column; gap:5px; }
+  .card .name{ font-family:'Nanum Pen Script',cursive; font-size:22px; line-height:1.1; color:var(--accent); }
+  .card .tags{ display:flex; gap:5px; flex-wrap:wrap; }
+  .tag{ font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--surface-2); color:var(--ink-soft); }
+  .tag.teal{ background:color-mix(in srgb, var(--teal) 18%, var(--surface-2)); color:var(--teal); }
+  .card .desc{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; }
+
+  #present{
+    position:fixed; inset:0; background:rgba(43,35,32,.88); display:none;
+    align-items:center; justify-content:center; padding:24px; z-index:50;
+  }
+  #present.open{ display:flex; }
+  .presentcard{
+    background:var(--surface); border-radius:22px; max-width:820px; width:100%; max-height:92vh;
+    overflow:auto; box-shadow:0 30px 60px -20px rgba(0,0,0,.5); display:flex; flex-direction:column;
+  }
+  .presentcard img{ width:100%; aspect-ratio:4/3; object-fit:cover; }
+  .presentbody{ padding:24px 28px 28px; display:flex; flex-direction:column; gap:10px; }
+  .presentbody .name{ font-family:'Nanum Pen Script',cursive; font-size:40px; color:var(--accent); line-height:1; }
+  .presentbody .desc{ font-size:16px; line-height:1.6; color:var(--ink); }
+  .presentnav{
+    position:absolute; top:50%; transform:translateY(-50%); background:var(--surface); border:none;
+    width:48px; height:48px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:var(--shadow); color:var(--ink);
+  }
+  #prevBtn{ left:16px; } #nextBtn{ right:16px; }
+  #closePresent{
+    position:absolute; top:20px; right:20px; background:var(--surface); border:none; width:38px; height:38px;
+    border-radius:50%; cursor:pointer; font-size:17px; box-shadow:var(--shadow); color:var(--ink); z-index:2;
+  }
+  .presentindex{ font-size:13px; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <div class="eyebrow">글로컬라이제이션 활동 · 발표 화면</div>
+      <h1>모둠 <span>K-퓨전</span> 메뉴 갤러리</h1>
+    </div>
+    <div class="joinbox">
+      <img id="qrImg" alt="접속 QR코드">
+      <div>
+        <div class="label">학생 접속 주소 (한 번만 입력하면 저장돼요)</div>
+        <div class="urlrow">
+          <input type="text" id="siteUrl" placeholder="예: https://내사이트주소.web.app/">
+          <button id="saveUrlBtn" type="button">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="galleryhead">
+    <span class="count" id="countLabel">0개 제출됨</span>
+    <button class="resetbtn" id="resetAllBtn" type="button">전체 삭제</button>
+  </div>
+
+  <div class="gallery" id="gallery">
+    <div class="empty">학생들이 제출하면 여기에 실시간으로 나타나요.</div>
+  </div>
+
+  <div id="present">
+    <button id="closePresent" type="button" aria-label="닫기">✕</button>
+    <button class="presentnav" id="prevBtn" type="button" aria-label="이전">‹</button>
+    <div class="presentcard" id="presentCard"></div>
+    <button class="presentnav" id="nextBtn" type="button" aria-label="다음">›</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getFirestore, collection, onSnapshot, query, orderBy, deleteDoc, doc, getDocs
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const submissionsRef = collection(db, "submissions");
+
+    // ---------- QR / join box ----------
+    const siteUrlInput = document.getElementById('siteUrl');
+    const qrImg = document.getElementById('qrImg');
+    const saved = localStorage.getItem('kfusion_site_url') || '';
+    if (saved) siteUrlInput.value = saved;
+    function updateQr(){
+      const url = siteUrlInput.value.trim();
+      if (!url){ qrImg.removeAttribute('src'); return; }
+      qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(url);
+    }
+    document.getElementById('saveUrlBtn').addEventListener('click', ()=>{
+      localStorage.setItem('kfusion_site_url', siteUrlInput.value.trim());
+      updateQr();
+    });
+    updateQr();
+
+    // ---------- gallery ----------
+    const galleryEl = document.getElementById('gallery');
+    const countLabel = document.getElementById('countLabel');
+    let entries = [];
+
+    function escapeHtml(str){
+      return (str||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function renderGallery(){
+      countLabel.textContent = entries.length + '개 제출됨';
+      if (entries.length === 0){
+        galleryEl.innerHTML = '<div class="empty">학생들이 제출하면 여기에 실시간으로 나타나요.</div>';
+        return;
+      }
+      galleryEl.innerHTML = '';
+      entries.forEach((en, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML =
+          '<img src="' + en.image + '" alt="' + escapeHtml(en.name) + '">' +
+          '<div class="cardbody">' +
+            '<div class="name">' + escapeHtml(en.name || '이름 없는 메뉴') + '</div>' +
+            '<div class="tags">' +
+              (en.korean ? '<span class="tag">' + escapeHtml(en.korean) + '</span>' : '') +
+              (en.culture ? '<span class="tag teal">' + escapeHtml(en.culture) + '</span>' : '') +
+            '</div>' +
+            '<div class="desc">' + escapeHtml(en.desc || '') + '</div>' +
+          '</div>';
+        card.addEventListener('click', () => openPresent(idx));
+        galleryEl.appendChild(card);
+      });
+    }
+
+    const q = query(submissionsRef, orderBy('createdAt', 'asc'));
+    onSnapshot(q, (snap) => {
+      entries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderGallery();
+    }, (err) => {
+      console.error(err);
+      galleryEl.innerHTML = '<div class="empty">연결에 문제가 있어요: ' + err.code + '</div>';
+    });
+
+    document.getElementById('resetAllBtn').addEventListener('click', async () => {
+      if (!confirm('제출된 모든 메뉴를 삭제할까요? 되돌릴 수 없어요.')) return;
+      const snap = await getDocs(submissionsRef);
+      await Promise.all(snap.docs.map(d => deleteDoc(doc(db, 'submissions', d.id))));
+    });
+
+    // ---------- present mode ----------
+    const present = document.getElementById('present');
+    const presentCard = document.getElementById('presentCard');
+    let currentPresentIdx = 0;
+
+    function renderPresent(){
+      const en = entries[currentPresentIdx];
+      if (!en){ closePresent(); return; }
+      presentCard.innerHTML =
+        '<img src="' + en.image + '" alt="' + escapeHtml(en.name) + '">' +
+        '<div class="presentbody">' +
+          '<div class="name">' + escapeHtml(en.name || '이름 없는 메뉴') + '</div>' +
+          '<div class="tags">' +
+            (en.korean ? '<span class="tag">' + escapeHtml(en.korean) + '</span>' : '') +
+            (en.culture ? '<span class="tag teal">' + escapeHtml(en.culture) + '</span>' : '') +
+          '</div>' +
+          '<div class="desc">' + escapeHtml(en.desc || '') + '</div>' +
+          (en.country ? '<div class="desc"><strong>고려한 입맛:</strong> ' + escapeHtml(en.country) + '</div>' : '') +
+          '<div class="presentindex">' + (currentPresentIdx+1) + ' / ' + entries.length + '</div>' +
+        '</div>';
+    }
+    function openPresent(idx){ currentPresentIdx = idx; renderPresent(); present.classList.add('open'); }
+    function closePresent(){ present.classList.remove('open'); }
+
+    document.getElementById('closePresent').addEventListener('click', closePresent);
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      currentPresentIdx = (currentPresentIdx - 1 + entries.length) % entries.length; renderPresent();
+    });
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      currentPresentIdx = (currentPresentIdx + 1) % entries.length; renderPresent();
+    });
+    present.addEventListener('click', (e) => { if (e.target === present) closePresent(); });
+    document.addEventListener('keydown', (e) => {
+      if (!present.classList.contains('open')) return;
+      if (e.key === 'Escape') closePresent();
+      if (e.key === 'ArrowLeft') document.getElementById('prevBtn').click();
+      if (e.key === 'ArrowRight') document.getElementById('nextBtn').click();
+    });
+  </script>
+</body>
+</html>

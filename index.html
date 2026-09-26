@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>K-퓨전 메뉴 연구소</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&family=Nanum+Pen+Script&display=swap">
+<style>
+  :root{
+    --bg:#FBF6EE; --surface:#FFFFFF; --surface-2:#F3E9DA;
+    --ink:#2B2320; --ink-soft:#6B5C4F;
+    --accent:#C1432E; --accent-ink:#FFFFFF;
+    --teal:#1F7A6C; --gold:#D9A441; --line:#E7DAC6;
+    --shadow: 0 10px 28px -14px rgba(43,35,32,.35);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink); }
+  body{
+    font-family:'Noto Sans KR',sans-serif;
+    padding-inline:20px; padding-block:26px;
+    display:flex; flex-direction:column; gap:22px;
+    max-width:640px; margin-inline:auto;
+    min-height:100dvh;
+  }
+  header{ display:flex; flex-direction:column; gap:6px; }
+  .eyebrow{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); font-weight:700; }
+  h1{ font-family:'Gowun Batang',serif; font-size:clamp(24px,6vw,32px); margin:0; line-height:1.25; }
+  h1 span{ color:var(--accent); }
+  .sub{ color:var(--ink-soft); font-size:14px; line-height:1.6; }
+
+  .panel{
+    background:var(--surface); border:1px solid var(--line); border-radius:18px;
+    padding:18px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:14px;
+  }
+  .panel h2{
+    font-size:13px; letter-spacing:.06em; text-transform:uppercase; margin:0; color:var(--ink-soft);
+    display:flex; align-items:center; gap:8px;
+  }
+  .panel h2 .num{
+    width:20px; height:20px; border-radius:50%; background:var(--accent); color:var(--accent-ink);
+    font-size:11px; display:flex; align-items:center; justify-content:center; font-weight:700;
+  }
+
+  canvas{
+    width:100%; aspect-ratio:4/3; border-radius:12px; background:#FFFDF9;
+    border:1px dashed var(--line); touch-action:none; cursor:crosshair; display:block;
+  }
+  .toolrow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .swatches{ display:flex; gap:6px; }
+  .swatch{
+    width:24px; height:24px; border-radius:50%; border:2px solid var(--surface);
+    outline:1px solid var(--line); cursor:pointer; padding:0;
+  }
+  .swatch[aria-pressed="true"]{ outline:2px solid var(--ink); }
+  input[type="range"]{ accent-color:var(--accent); width:84px; }
+  .ghostbtn,.primarybtn{
+    font-family:inherit; border-radius:999px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--ink); font-size:13px; padding:7px 14px;
+    cursor:pointer; font-weight:500;
+  }
+  .primarybtn{
+    background:var(--accent); color:var(--accent-ink); border-color:transparent;
+    font-weight:700; padding:13px 20px; font-size:15px; width:100%;
+  }
+  .primarybtn:disabled{ opacity:.5; cursor:not-allowed; }
+  label{ font-size:12.5px; font-weight:700; color:var(--ink-soft); display:block; margin-bottom:5px; }
+  input[type="text"], textarea{
+    width:100%; font-family:'Noto Sans KR',sans-serif; font-size:15px; padding:10px 12px;
+    border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--ink);
+  }
+  textarea{ resize:vertical; min-height:54px; line-height:1.5; }
+  .field{ margin-bottom:0; }
+
+  .status{
+    text-align:center; font-size:13px; color:var(--ink-soft); min-height:18px;
+  }
+  .status.ok{ color:var(--teal); font-weight:700; }
+  .status.err{ color:var(--accent); font-weight:700; }
+
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(120%);
+    background:var(--ink); color:var(--bg); padding:12px 20px; border-radius:999px;
+    font-size:14px; font-weight:700; box-shadow:var(--shadow); transition:transform .3s ease;
+    z-index:10;
+  }
+  .toast.show{ transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+  <header>
+    <div class="eyebrow">글로컬라이제이션 활동 · K-Fusion Menu Lab</div>
+    <h1>내가 만드는 <span>K-퓨전</span> 메뉴</h1>
+    <p class="sub">좋아하는 한식과 관심 있는 나라의 문화를 하나로 합쳐, 세상에 없던 메뉴를 그려서 제출해보세요. 제출하면 바로 앞 화면(발표 화면)에 올라갑니다.</p>
+  </header>
+
+  <section class="panel">
+    <h2><span class="num">1</span>메뉴 그리기</h2>
+    <canvas id="canvas"></canvas>
+    <div class="toolrow">
+      <div class="swatches" id="swatches"></div>
+      <label style="margin:0; display:flex; align-items:center; gap:6px; font-weight:400;">굵기
+        <input type="range" id="size" min="2" max="22" value="6">
+      </label>
+      <button class="ghostbtn" id="eraseBtn" type="button">지우개</button>
+      <button class="ghostbtn" id="undoBtn" type="button">되돌리기</button>
+      <button class="ghostbtn" id="clearBtn" type="button">전체 지우기</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2><span class="num">2</span>메뉴 설명 쓰기</h2>
+    <div class="field">
+      <label for="menuName">메뉴 이름</label>
+      <input type="text" id="menuName" placeholder="예: 불고기 케밥" maxlength="40">
+    </div>
+    <div class="field">
+      <label for="korean">어떤 한식을 넣었나요?</label>
+      <input type="text" id="korean" placeholder="예: 불고기" maxlength="30">
+    </div>
+    <div class="field">
+      <label for="culture">어떤 나라 문화와 섞었나요?</label>
+      <input type="text" id="culture" placeholder="예: 터키" maxlength="30">
+    </div>
+    <div class="field">
+      <label for="desc">한 줄 소개</label>
+      <textarea id="desc" maxlength="140" placeholder="예: 달콤짭짤한 불고기를 화덕에 구워 얇은 빵에 채소와 함께 싸먹는 메뉴예요."></textarea>
+    </div>
+    <div class="field">
+      <label for="country">어떤 나라 사람들 입맛을 고려했나요?</label>
+      <input type="text" id="country" placeholder="예: 향신료보다 달콤한 맛을 좋아하는 입맛" maxlength="60">
+    </div>
+  </section>
+
+  <button class="primarybtn" id="submitBtn" type="button">✏️ 메뉴 제출하기</button>
+  <div class="status" id="statusLine"></div>
+
+  <div class="toast" id="toast">제출 완료! 발표 화면을 확인해보세요 🎉</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, serverTimestamp,
+      onSnapshot, query
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const submissionsRef = collection(db, "submissions");
+
+    // ---------- drawing ----------
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false, currentStroke = null;
+    let strokes = [];
+    let currentColor = '#C1432E';
+    let eraseMode = false;
+    const COLORS = ['#2B2320', '#C1432E', '#1F7A6C', '#D9A441', '#3F5EA6', '#8A4FB0'];
+
+    function bg(){ return getComputedStyle(canvas).backgroundColor || '#FFFDF9'; }
+
+    function sizeCanvas(){
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.round(rect.width * dpr));
+      canvas.height = Math.max(1, Math.round(rect.height * dpr));
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      redraw();
+    }
+
+    function redraw(){
+      const rect = canvas.getBoundingClientRect();
+      ctx.save();
+      ctx.setTransform(window.devicePixelRatio||1,0,0,window.devicePixelRatio||1,0,0);
+      ctx.clearRect(0,0,rect.width,rect.height);
+      ctx.fillStyle = bg();
+      ctx.fillRect(0,0,rect.width,rect.height);
+      strokes.forEach(s=>{
+        if (s.points.length < 2) return;
+        ctx.beginPath();
+        ctx.lineJoin='round'; ctx.lineCap='round';
+        ctx.lineWidth = s.size;
+        ctx.strokeStyle = s.erase ? bg() : s.color;
+        ctx.moveTo(s.points[0].x, s.points[0].y);
+        for (let i=1;i<s.points.length;i++) ctx.lineTo(s.points[i].x, s.points[i].y);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    function getPos(e){
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+    function startDraw(e){
+      e.preventDefault(); drawing = true;
+      const p = getPos(e);
+      currentStroke = { points:[p], color: currentColor, size: parseInt(sizeInput.value,10), erase: eraseMode };
+      strokes.push(currentStroke); redraw();
+    }
+    function moveDraw(e){
+      if (!drawing) return; e.preventDefault();
+      currentStroke.points.push(getPos(e)); redraw();
+    }
+    function endDraw(){ drawing=false; currentStroke=null; }
+
+    canvas.addEventListener('pointerdown', startDraw);
+    canvas.addEventListener('pointermove', moveDraw);
+    window.addEventListener('pointerup', endDraw);
+    canvas.addEventListener('touchstart', startDraw, {passive:false});
+    canvas.addEventListener('touchmove', moveDraw, {passive:false});
+    canvas.addEventListener('touchend', endDraw);
+
+    const swatchesEl = document.getElementById('swatches');
+    COLORS.forEach((c,i)=>{
+      const b = document.createElement('button');
+      b.type='button'; b.className='swatch'; b.style.background=c;
+      b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+      b.addEventListener('click', ()=>{
+        currentColor=c; eraseMode=false; eraseBtn.setAttribute('aria-pressed','false');
+        eraseBtn.style.background=''; eraseBtn.style.color='';
+        [...swatchesEl.children].forEach(el=>el.setAttribute('aria-pressed', el===b?'true':'false'));
+      });
+      swatchesEl.appendChild(b);
+    });
+
+    const sizeInput = document.getElementById('size');
+    const eraseBtn = document.getElementById('eraseBtn');
+    eraseBtn.addEventListener('click', ()=>{
+      eraseMode = !eraseMode;
+      eraseBtn.setAttribute('aria-pressed', eraseMode ? 'true':'false');
+      eraseBtn.style.background = eraseMode ? 'var(--accent)' : '';
+      eraseBtn.style.color = eraseMode ? 'var(--accent-ink)' : '';
+    });
+    document.getElementById('undoBtn').addEventListener('click', ()=>{ strokes.pop(); redraw(); });
+    document.getElementById('clearBtn').addEventListener('click', ()=>{ strokes = []; redraw(); });
+    window.addEventListener('resize', sizeCanvas);
+    requestAnimationFrame(sizeCanvas);
+
+    // ---------- submit ----------
+    const menuNameEl = document.getElementById('menuName');
+    const koreanEl = document.getElementById('korean');
+    const cultureEl = document.getElementById('culture');
+    const descEl = document.getElementById('desc');
+    const countryEl = document.getElementById('country');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusLine = document.getElementById('statusLine');
+    const toast = document.getElementById('toast');
+
+    function showToast(){
+      toast.classList.add('show');
+      setTimeout(()=>toast.classList.remove('show'), 2600);
+    }
+
+    submitBtn.addEventListener('click', async ()=>{
+      if (strokes.length === 0 && !menuNameEl.value.trim()){
+        statusLine.textContent = '그림을 그리거나 메뉴 이름을 먼저 적어주세요.';
+        statusLine.className = 'status err';
+        menuNameEl.focus();
+        return;
+      }
+      submitBtn.disabled = true;
+      statusLine.textContent = '제출 중...';
+      statusLine.className = 'status';
+
+      let dataUrl = '';
+      try { dataUrl = canvas.toDataURL('image/jpeg', 0.72); } catch(e){}
+
+      try {
+        await addDoc(submissionsRef, {
+          name: menuNameEl.value.trim(),
+          korean: koreanEl.value.trim(),
+          culture: cultureEl.value.trim(),
+          desc: descEl.value.trim(),
+          country: countryEl.value.trim(),
+          image: dataUrl,
+          createdAt: serverTimestamp(),
+        });
+        statusLine.textContent = '제출 완료!';
+        statusLine.className = 'status ok';
+        showToast();
+        strokes = []; redraw();
+        menuNameEl.value=''; koreanEl.value=''; cultureEl.value=''; descEl.value=''; countryEl.value='';
+        menuNameEl.focus();
+      } catch(err){
+        console.error(err);
+        statusLine.textContent = '제출에 실패했어요. 다시 시도해주세요. (' + (err.code||'error') + ')';
+        statusLine.className = 'status err';
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
