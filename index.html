@@ -52,6 +52,14 @@
     outline:1px solid var(--line); cursor:pointer; padding:0;
   }
   .swatch[aria-pressed="true"]{ outline:2px solid var(--ink); }
+  .colorpicker-label{
+    width:26px; height:26px; border-radius:50%; overflow:hidden; display:inline-block;
+    border:1px solid var(--line); cursor:pointer; position:relative;
+  }
+  .colorpicker-label input[type="color"]{
+    position:absolute; inset:-4px; width:calc(100% + 8px); height:calc(100% + 8px);
+    border:none; padding:0; cursor:pointer;
+  }
   input[type="range"]{ accent-color:var(--accent); width:84px; }
   .ghostbtn,.primarybtn{
     font-family:inherit; border-radius:999px; border:1px solid var(--line);
@@ -98,6 +106,9 @@
     <canvas id="canvas"></canvas>
     <div class="toolrow">
       <div class="swatches" id="swatches"></div>
+      <label class="colorpicker-label" title="원하는 색 직접 고르기">
+        <input type="color" id="customColor" value="#c1432e">
+      </label>
       <label style="margin:0; display:flex; align-items:center; gap:6px; font-weight:400;">굵기
         <input type="range" id="size" min="2" max="22" value="6">
       </label>
@@ -155,7 +166,10 @@
     let strokes = [];
     let currentColor = '#C1432E';
     let eraseMode = false;
-    const COLORS = ['#2B2320', '#C1432E', '#1F7A6C', '#D9A441', '#3F5EA6', '#8A4FB0'];
+    const COLORS = [
+      '#2B2320', '#FFFFFF', '#C1432E', '#E8895F', '#D9A441', '#E8D24C',
+      '#4C9A5B', '#1F7A6C', '#3F5EA6', '#5B8CDE', '#8A4FB0', '#D767A6'
+    ];
 
     function bg(){ return getComputedStyle(canvas).backgroundColor || '#FFFDF9'; }
 
@@ -226,6 +240,15 @@
       swatchesEl.appendChild(b);
     });
 
+    const customColorInput = document.getElementById('customColor');
+    customColorInput.addEventListener('input', ()=>{
+      currentColor = customColorInput.value;
+      eraseMode = false;
+      eraseBtn.setAttribute('aria-pressed','false');
+      eraseBtn.style.background=''; eraseBtn.style.color='';
+      [...swatchesEl.children].forEach(el=>el.setAttribute('aria-pressed','false'));
+    });
+
     const sizeInput = document.getElementById('size');
     const eraseBtn = document.getElementById('eraseBtn');
     eraseBtn.addEventListener('click', ()=>{
@@ -238,6 +261,19 @@
     document.getElementById('clearBtn').addEventListener('click', ()=>{ strokes = []; redraw(); });
     window.addEventListener('resize', sizeCanvas);
     requestAnimationFrame(sizeCanvas);
+
+    // 화면은 고해상도로 그리되, 업로드는 작은 사본으로 변환해서 속도를 크게 줄인다.
+    function exportSmallImage(maxWidth){
+      const rect = canvas.getBoundingClientRect();
+      const scale = Math.min(1, maxWidth / rect.width);
+      const outW = Math.round(rect.width * scale);
+      const outH = Math.round(rect.height * scale);
+      const off = document.createElement('canvas');
+      off.width = outW; off.height = outH;
+      const octx = off.getContext('2d');
+      octx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, outW, outH);
+      try { return off.toDataURL('image/jpeg', 0.6); } catch(e){ return ''; }
+    }
 
     // ---------- submit ----------
     const menuNameEl = document.getElementById('menuName');
@@ -265,8 +301,7 @@
       statusLine.textContent = '제출 중...';
       statusLine.className = 'status';
 
-      let dataUrl = '';
-      try { dataUrl = canvas.toDataURL('image/jpeg', 0.72); } catch(e){}
+      const dataUrl = exportSmallImage(480);
 
       try {
         await addDoc(submissionsRef, {
