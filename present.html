@@ -85,58 +85,50 @@
   }
   @keyframes pop{ from{opacity:0; transform:scale(.94);} to{opacity:1; transform:scale(1);} }
 
-  /* ---------- fridge reveal ---------- */
-  .dish{ position:relative; width:100%; aspect-ratio:4/3; overflow:hidden; background:#000; }
-  .dish .dishimg{
-    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;
-    transform:scale(.5); opacity:0; filter:brightness(.95);
+  /* ---------- plate reveal: 돔(뚜껑)이 들어올려지며 접시 위 그림이 뿅 튀어나옴 ---------- */
+  .dish{
+    position:relative; width:100%; aspect-ratio:4/3; overflow:hidden;
+    background:radial-gradient(ellipse at 50% 62%, #202226, #0A0A0B 72%);
+    display:flex; align-items:center; justify-content:center;
   }
-  .dish[data-revealed="true"] .dishimg{ transform:scale(1); opacity:1; }
-  .dish.opening .dishimg{ animation: dishPop .6s cubic-bezier(.34,1.6,.64,1) .32s forwards; }
+  .plate{
+    position:relative; width:70%; aspect-ratio:1/1; border-radius:50%; overflow:hidden;
+    box-shadow:
+      0 26px 40px -14px rgba(0,0,0,.7),
+      0 0 0 7px #e9e9eb,
+      0 0 0 9px #c7c8cb,
+      0 0 0 10px rgba(0,0,0,.25);
+    transform:scale(.4) translateY(10px); opacity:0;
+  }
+  .plate .dishimg{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .dish[data-revealed="true"] .plate{ transform:scale(1) translateY(0); opacity:1; }
+  .dish.opening .plate{ animation: platePop .65s cubic-bezier(.32,1.7,.55,1) .28s forwards; }
+  @keyframes platePop{
+    0%{ transform:scale(.35) translateY(16px); opacity:0; }
+    55%{ transform:scale(1.14) translateY(-8px); opacity:1; }
+    78%{ transform:scale(.94) translateY(2px); }
+    100%{ transform:scale(1) translateY(0); opacity:1; }
+  }
 
-  .doors{ position:absolute; inset:0; display:flex; z-index:3; }
-  .door{
-    position:relative; width:50%; height:100%;
+  .dome{
+    position:absolute; left:50%; top:50%; z-index:5;
+    width:76%; aspect-ratio:1/0.62; transform:translate(-50%,-58%);
+    border-radius:50% 50% 8% 8% / 100% 100% 12% 12%;
     background:
-      repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 2px, transparent 2px 5px),
-      linear-gradient(180deg, #3A3F46, #17191D 70%);
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08);
+      radial-gradient(ellipse at 32% 18%, rgba(255,255,255,.9), rgba(255,255,255,0) 40%),
+      linear-gradient(160deg, #f3f4f5 0%, #cacccf 26%, #8d8f93 54%, #55575b 78%, #302f31 100%);
+    box-shadow:0 16px 28px -10px rgba(0,0,0,.75), inset 0 -8px 12px rgba(0,0,0,.3);
   }
-  .door::after{
-    content:''; position:absolute; top:50%; width:5px; height:32%;
-    background:linear-gradient(180deg, #C9CFD5, #6E747C); border-radius:2px; transform:translateY(-50%);
-    box-shadow:0 0 6px rgba(0,0,0,.5);
+  .dome::after{
+    content:''; position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+    width:18px; height:18px; border-radius:50%;
+    background:linear-gradient(160deg,#f3f4f5,#8d8f93); box-shadow:0 3px 7px rgba(0,0,0,.55);
   }
-  .door.left::after{ right:10px; }
-  .door.right::after{ left:10px; }
-  .dish.opening .door.left{ animation: doorOpenLeft .5s cubic-bezier(.5,0,.3,1) forwards; }
-  .dish.opening .door.right{ animation: doorOpenRight .5s cubic-bezier(.5,0,.3,1) forwards; }
-  @keyframes doorOpenLeft{ to{ transform:translateX(-104%) rotate(-4deg); opacity:.1; } }
-  @keyframes doorOpenRight{ to{ transform:translateX(104%) rotate(4deg); opacity:.1; } }
-
-  .flash{
-    position:absolute; inset:0; z-index:5; pointer-events:none;
-    background:linear-gradient(100deg, transparent 40%, rgba(255,255,255,.9) 48%, transparent 56%);
-    transform:translateX(-120%); opacity:0;
+  .dish.opening .dome{ animation: domeLift .5s cubic-bezier(.5,0,.35,1) forwards; }
+  @keyframes domeLift{
+    to{ transform:translate(-28%,-210%) rotate(-20deg) scale(.7); opacity:0; }
   }
-  .dish.opening .flash{ animation: flashSweep .55s ease .28s forwards; }
-  @keyframes flashSweep{
-    0%{ transform:translateX(-120%); opacity:0; }
-    15%{ opacity:.9; }
-    60%{ opacity:.5; }
-    100%{ transform:translateX(120%); opacity:0; }
-  }
-
-  .doorhint{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    z-index:4; pointer-events:none;
-  }
-  .doorhint .txt{
-    font-family:'Gothic A1',sans-serif; font-weight:900; font-size:13px; color:#C6CBD1;
-    letter-spacing:.28em; padding:6px 4px; border-top:1px solid rgba(255,255,255,.25); border-bottom:1px solid rgba(255,255,255,.25);
-  }
-  .dish.opening .doorhint{ animation: hintFade .2s ease forwards; }
-  @keyframes hintFade{ to{ opacity:0; } }
+  .dish[data-revealed="true"] .dome{ display:none; }
 
   .stamp{
     position:absolute; top:9px; right:9px; z-index:6;
@@ -147,14 +139,8 @@
     transform:rotate(-14deg) scale(0);
   }
   .dish[data-revealed="true"] .stamp{ transform:rotate(-14deg) scale(1); }
-  .dish.opening .stamp{ animation: stampIn .3s cubic-bezier(.4,1.8,.6,1) .6s forwards; }
+  .dish.opening .stamp{ animation: stampIn .3s cubic-bezier(.4,1.8,.6,1) .68s forwards; }
   @keyframes stampIn{ to{ transform:rotate(-14deg) scale(1); } }
-
-  @keyframes dishPop{
-    0%{ transform:scale(.4); opacity:0; filter:brightness(2); }
-    55%{ transform:scale(1.08); opacity:1; filter:brightness(1.15); }
-    100%{ transform:scale(1); opacity:1; filter:brightness(.95); }
-  }
 
   .card .cardbody{ padding:10px 12px 12px; display:flex; flex-direction:column; gap:5px; }
   .author{ font-size:11.5px; font-weight:700; color:var(--gold); letter-spacing:.02em; }
@@ -170,12 +156,11 @@
   }
   #present.open{ display:flex; }
   .presentcard{
-    background:var(--panel); border-radius:12px; max-width:1140px; width:100%; max-height:92vh;
-    overflow:hidden; box-shadow:0 40px 80px -20px rgba(0,0,0,.8); display:flex; flex-wrap:wrap;
+    background:var(--panel); border-radius:12px; max-width:820px; width:100%; max-height:92vh;
+    overflow:auto; box-shadow:0 40px 80px -20px rgba(0,0,0,.8); display:flex; flex-direction:column;
     border:1px solid var(--line); border-top:1px solid #3A3E46;
   }
-  .presentmain{ flex:1 1 480px; min-width:320px; max-height:92vh; overflow:auto; display:flex; flex-direction:column; }
-  .presentmain img{ width:100%; aspect-ratio:4/3; object-fit:cover; }
+  .presentcard img{ width:100%; aspect-ratio:4/3; object-fit:cover; }
   .presentbody{ padding:24px 28px 28px; display:flex; flex-direction:column; gap:10px; }
   .presentbody .name{ font-family:'Gothic A1',sans-serif; font-weight:900; font-size:32px; color:var(--ink); line-height:1.15; }
   .presentbody .desc{ font-size:16px; line-height:1.6; color:var(--ink); }
@@ -190,46 +175,51 @@
   }
   .presentindex{ font-size:13px; color:var(--ink-soft); }
 
-  /* ---------- judge reactions: 발표 그림 옆 빈 공간에 캐릭터가 크게 팝업 ---------- */
-  .presentjudges{
-    flex:1 1 320px; min-width:280px; max-height:92vh; overflow:auto;
-    display:flex; flex-direction:column; justify-content:center; align-items:center; gap:26px;
-    padding:36px 24px; background:
-      radial-gradient(circle at 50% 0%, rgba(255,255,255,.05), transparent 55%),
-      linear-gradient(180deg, var(--panel-2), var(--panel));
-    border-left:1px solid var(--line);
+  /* ---------- 심사위원 리액션: 실존 인물과 무관한 원작 캐릭터 ---------- */
+  .judgesRow{
+    display:flex; flex-direction:column; gap:14px; margin-top:6px;
+    opacity:0; transform:translateY(10px); transition:opacity .5s ease, transform .5s ease;
   }
-  .judge{
-    display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; max-width:250px;
-    opacity:0; transform:perspective(700px) rotateY(-40deg) scale(.5) translateY(24px);
-    transition:opacity .5s cubic-bezier(.22,.9,.32,1.35), transform .6s cubic-bezier(.22,.9,.32,1.35);
+  .judgesRow.show{ opacity:1; transform:translateY(0); }
+  .judge{ display:flex; gap:14px; align-items:center; }
+  .hchar{ position:relative; width:64px; height:82px; flex:none; }
+  .hchar-head{
+    position:relative; width:44px; height:44px; border-radius:50%; margin:0 auto;
+    background:var(--skin,#e7bd90); box-shadow:0 6px 10px rgba(0,0,0,.35);
   }
-  .presentjudges.show .judge{ opacity:1; transform:perspective(700px) rotateY(0deg) scale(1) translateY(0); }
-  .presentjudges.show .judge:nth-child(2){ transition-delay:.28s; }
-  .presentjudges.show .judge:nth-child(3){ transition-delay:.56s; }
-  .javatar{
-    width:104px; height:104px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-size:56px; line-height:1; border:3px solid var(--jc, var(--accent));
-    background:radial-gradient(circle at 50% 32%, color-mix(in srgb, var(--jc, var(--accent)) 30%, transparent), transparent 72%);
-    box-shadow:0 16px 30px -8px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.06);
+  .hchar-hair{
+    position:absolute; top:-6px; left:-3px; right:-3px; height:24px;
+    border-radius:50% 50% 30% 30% / 65% 65% 20% 20%; background:var(--hair,#2b2b2b);
   }
-  .jbody{ display:flex; flex-direction:column; align-items:center; gap:6px; }
-  .jname{ font-family:'Gothic A1',sans-serif; font-weight:900; font-size:16px; color:var(--ink); }
-  .jrole{ font-weight:600; font-size:11.5px; color:var(--ink-soft); }
-  .jcriterion{ font-size:10.5px; font-weight:700; color:var(--ink-soft); opacity:.75; letter-spacing:.03em; }
+  .hchar-eyes{ position:absolute; top:44%; left:50%; transform:translateX(-50%); display:flex; gap:9px; }
+  .hchar-eyes span{ width:4.5px; height:4.5px; border-radius:50%; background:#232323; }
+  .hchar-mouth{
+    position:absolute; top:64%; left:50%; transform:translateX(-50%);
+    width:12px; height:2px; background:#232323; border-radius:2px;
+  }
+  .hchar.mood-good .hchar-mouth{
+    width:16px; height:9px; background:transparent; border:2px solid #232323; border-top:none;
+    border-radius:0 0 10px 10px;
+  }
+  .hchar-body{
+    width:60px; height:42px; margin:6px auto 0; border-radius:16px 16px 6px 6px;
+    background:var(--suit,#333); box-shadow:0 8px 14px rgba(0,0,0,.35); position:relative;
+  }
+  .hchar-body::before{
+    content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent;
+    border-top:11px solid var(--shirt,#EDEDED);
+  }
+  .jinfo{ flex:1; }
+  .jname{ font-family:'Gothic A1',sans-serif; font-weight:900; font-size:14px; color:var(--ink); }
+  .jrole{ font-weight:600; font-size:11px; color:var(--ink-soft); }
   .jquote{
-    position:relative; background:var(--panel-2); border-radius:14px; padding:11px 15px; font-size:13.5px;
-    color:var(--ink); line-height:1.5; box-shadow:0 8px 18px rgba(0,0,0,.35);
+    position:relative; background:var(--panel-2); border-radius:12px; padding:9px 13px; margin-top:4px;
+    font-size:13px; color:var(--ink); line-height:1.5;
   }
   .jquote::before{
-    content:''; position:absolute; top:-7px; left:50%; transform:translateX(-50%);
-    border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:7px solid var(--panel-2);
-  }
-  .jscore{ font-size:14px; color:var(--gold); letter-spacing:2px; }
-  .jloading{ font-size:14px; color:var(--ink-soft); font-style:italic; }
-  .jnote{ font-size:11px; color:var(--ink-soft); opacity:.75; max-width:260px; }
-  @media (max-width: 760px){
-    .presentjudges{ border-left:none; border-top:1px solid var(--line); }
+    content:''; position:absolute; top:50%; left:-6px; transform:translateY(-50%);
+    border-top:6px solid transparent; border-bottom:6px solid transparent; border-right:6px solid var(--panel-2);
   }
 </style>
 </head>
@@ -311,84 +301,70 @@
       return (str||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
-    // ---------- judge evaluation: 실제 제출 내용을 기준으로 채점하는 규칙 기반 엔진 ----------
-    // (완전히 창작된 캐릭터이며 실제 인물/프로그램과 무관합니다)
+    // ---------- 심사위원 리액션: 실제 제출 내용을 기준으로 코멘트하는 규칙 기반 엔진 ----------
+    // (실존 인물과 무관한 원작 캐릭터 2명 — 점수는 없고 한줄 코멘트만)
     const JUDGE_META = {
-      '정교한': { role:'미각 디자이너', avatar:'🧑‍🍳', color:'#4FB6C9', criterion:'맛 표현의 구체성' },
-      '대범한': { role:'불맛 담당',     avatar:'🔥',           color:'#E8382A', criterion:'조합의 대담함' },
-      '설레는': { role:'문화 큐레이터', avatar:'🌍',           color:'#D9A441', criterion:'문화적 연결성' },
+      '정교한': { role:'미각 큐레이터', skin:'#e7bd90', hair:'#c9c9c9', suit:'#2a2f38', shirt:'#EDEDED' },
+      '대범한': { role:'도전 정신 담당', skin:'#e3ac7c', hair:'#221f1c', suit:'#7a2323', shirt:'#EDEDED' },
     };
     const FLAVOR_WORDS = ['매콤','달콤','고소','짭짤','새콤','바삭','쫄깃','진한','깊은','부드러운','알싸','향긋','시원한','얼큰','촉촉'];
     function firstWord(str){ return (str||'').trim().split(/[,\s/·]+/)[0] || ''; }
 
-    // 학생이 실제로 적은 이름/한식 요소/문화/설명/국가를 기준으로 세 항목을 채점합니다.
+    // 학생이 실제로 적은 이름/한식 요소/문화/설명/국가를 기준으로 두 캐릭터가 코멘트합니다.
     function evaluateMenu(en){
       const desc = (en.desc || '').trim();
       const korean = (en.korean || '').trim();
       const culture = (en.culture || '').trim();
       const country = (en.country || '').trim();
 
-      // 1) 정교한 — 맛 표현이 구체적인가
+      // 정교한 — 맛 표현의 구체성 + 문화적 연결성을 함께 코멘트
       const matchedFlavors = FLAVOR_WORDS.filter(w => desc.includes(w));
-      let precisionScore = 1;
-      if (desc.length >= 15) precisionScore++;
-      if (desc.length >= 40) precisionScore++;
-      precisionScore += Math.min(2, matchedFlavors.length);
-      precisionScore = Math.max(1, Math.min(5, precisionScore));
-      const precisionQuote = matchedFlavors.length
-        ? '"' + matchedFlavors[0] + '"라는 표현에서 맛이 그려져요. 설명이 구체적이에요.'
-        : (desc.length >= 15
-            ? (korean ? korean + '의 맛이 잘 느껴지는 설명이에요.' : '설명이 자세해서 맛이 그려져요.')
-            : '어떤 맛인지 한 문장만 더 있으면 훨씬 생생할 것 같아요.');
-
-      // 2) 대범한 — 타문화 조합이 얼마나 과감/구체적인가
-      let boldScore = 1;
-      if (culture) boldScore += 2;
-      if (country) boldScore += 1;
-      if (culture.length >= 6) boldScore += 1;
-      boldScore = Math.max(1, Math.min(5, boldScore));
-      const boldQuote = culture
-        ? '"' + culture + '"까지 끌고 온 게 대담해요! 한식과의 온도 차가 재밌네요.'
-        : '아직 타문화 요소가 잘 안 보여요. 어떤 나라 느낌을 더해볼 수 있을까요?';
-
-      // 3) 설레는 — 설명 속에서 한식×문화가 실제로 이어지는가
       const koreanKw = firstWord(korean), cultureKw = firstWord(culture);
       const mentionsKorean = koreanKw && desc.includes(koreanKw);
       const mentionsCulture = cultureKw && desc.includes(cultureKw);
-      let cultureScore = 1;
-      if (mentionsKorean) cultureScore++;
-      if (mentionsCulture) cultureScore++;
-      if (korean && culture) cultureScore++;
-      if (desc.length >= 30) cultureScore++;
-      cultureScore = Math.max(1, Math.min(5, cultureScore));
-      const cultureQuote = (mentionsKorean && mentionsCulture)
-        ? '설명 안에 ' + korean + '과 ' + culture + '가 함께 녹아 있어서 연결이 자연스러워요.'
-        : (korean && culture
-            ? korean + '과 ' + culture + '를 잇는 시도가 보여요. 왜 이 조합을 골랐는지 한 줄 더 들려주면 좋겠어요.'
-            : '한식 요소와 타문화 요소를 각각 더 구체적으로 적어주면 평가하기 좋아요.');
+      let seniorGood = matchedFlavors.length > 0 || desc.length >= 30;
+      let seniorQuote;
+      if (matchedFlavors.length){
+        seniorQuote = '"' + matchedFlavors[0] + '"라는 표현 덕분에 맛이 그려지네요.' +
+          (mentionsKorean && mentionsCulture ? ' ' + korean + '과 ' + culture + '가 자연스럽게 이어져요.' : '');
+      } else if (desc.length >= 20){
+        seniorQuote = (korean ? korean + '의 느낌이 잘 살아있어요.' : '설명이 자세해서 좋아요.') +
+          (korean && culture ? ' ' + korean + '과 ' + culture + '를 잇는 시도가 보여요.' : '');
+      } else {
+        seniorQuote = '어떤 맛인지, 왜 이 조합을 골랐는지 한 문장만 더 있으면 훨씬 좋겠어요.';
+        seniorGood = false;
+      }
+
+      // 대범한 — 조합의 대담함
+      const juniorGood = !!culture;
+      const juniorQuote = culture
+        ? ('"' + culture + '"까지 끌고 온 게 대담해요! 한식과의 온도 차가 재밌네요.' + (country ? ' ' + country + ' 입맛까지 고려한 것도 좋아요.' : ''))
+        : '아직 타문화 요소가 잘 안 보여요. 어떤 나라 느낌을 더해볼 수 있을까요?';
 
       return [
-        { name:'정교한', score:precisionScore, quote:precisionQuote },
-        { name:'대범한', score:boldScore,      quote:boldQuote },
-        { name:'설레는', score:cultureScore,   quote:cultureQuote },
+        { name:'정교한', good:seniorGood, quote:seniorQuote },
+        { name:'대범한', good:juniorGood, quote:juniorQuote },
       ];
     }
 
-    // results: [{name, score, quote|comment}] — 규칙 기반이든 AI 응답이든 이 형태면 렌더링 가능
     function renderJudgesHtml(results){
       return results.map(j => {
-        const meta = JUDGE_META[j.name] || { role:'', avatar:'🍽️', color:'#999', criterion:'' };
-        const score = Math.max(1, Math.min(5, Math.round(Number(j.score)) || 3));
-        const stars = '★'.repeat(score) + '☆'.repeat(5-score);
-        const text = j.quote || j.comment || '';
+        const meta = JUDGE_META[j.name] || {};
+        const moodClass = j.good ? 'mood-good' : 'mood-mid';
+        const style = '--skin:' + meta.skin + ';--hair:' + meta.hair + ';--suit:' + meta.suit + ';--shirt:' + meta.shirt;
         return (
-          '<div class="judge" style="--jc:' + meta.color + '">' +
-            '<div class="javatar">' + meta.avatar + '</div>' +
-            '<div class="jbody">' +
+          '<div class="judge">' +
+            '<div class="hchar ' + moodClass + '" style="' + style + '">' +
+              '<div class="hchar-head">' +
+                '<div class="hchar-hair"></div>' +
+                '<div class="hchar-eyes"><span></span><span></span></div>' +
+                '<div class="hchar-mouth"></div>' +
+              '</div>' +
+              '<div class="hchar-body"></div>' +
+            '</div>' +
+            '<div class="jinfo">' +
               '<div class="jname">' + j.name + ' <span class="jrole">· ' + meta.role + '</span></div>' +
-              (meta.criterion ? '<div class="jcriterion">기준: ' + meta.criterion + '</div>' : '') +
-              '<div class="jquote">“' + escapeHtml(text) + '”</div>' +
-              '<div class="jscore">' + stars + '</div>' +
+              '<div class="jquote">“' + escapeHtml(j.quote) + '”</div>' +
             '</div>' +
           '</div>'
         );
@@ -410,15 +386,8 @@
         card.innerHTML =
           '<div class="dish"' + (revealed ? ' data-revealed="true"' : '') + '>' +
             '<div class="stamp">완성</div>' +
-            (revealed ? '' :
-              '<div class="doors">' +
-                '<div class="door left"></div>' +
-                '<div class="door right"></div>' +
-              '</div>' +
-              '<div class="doorhint"><span class="txt">O P E N</span></div>' +
-              '<div class="flash"></div>'
-            ) +
-            '<img class="dishimg" src="' + en.image + '" alt="' + escapeHtml(en.name) + '">' +
+            (revealed ? '' : '<div class="dome"></div>') +
+            '<div class="plate"><img class="dishimg" src="' + en.image + '" alt="' + escapeHtml(en.name) + '"></div>' +
           '</div>' +
           '<div class="cardbody">' +
             (en.author ? '<div class="author">' + escapeHtml(en.author) + '</div>' : '') +
@@ -462,55 +431,47 @@
       if (!en){ closePresent(); return; }
       const revealed = revealedIds.has(en.id);
       presentCard.innerHTML =
-        '<div class="presentmain">' +
-          '<div class="dish"' + (revealed ? ' data-revealed="true"' : '') + '>' +
-            '<div class="stamp">완성</div>' +
-            (revealed ? '' :
-              '<div class="doors">' +
-                '<div class="door left"></div>' +
-                '<div class="door right"></div>' +
-              '</div>' +
-              '<div class="doorhint"><span class="txt">O P E N</span></div>' +
-              '<div class="flash"></div>'
-            ) +
-            '<img class="dishimg" src="' + en.image + '" alt="' + escapeHtml(en.name) + '">' +
-          '</div>' +
-          '<div class="presentbody"' + (revealed ? '' : ' style="opacity:0"') + '>' +
-            (en.author ? '<div class="author">' + escapeHtml(en.author) + '</div>' : '') +
-            '<div class="name">' + escapeHtml(en.name || '이름 없는 메뉴') + '</div>' +
-            '<div class="tags">' +
-              (en.korean ? '<span class="tag">' + escapeHtml(en.korean) + '</span>' : '') +
-              (en.culture ? '<span class="tag teal">' + escapeHtml(en.culture) + '</span>' : '') +
-            '</div>' +
-            '<div class="desc">' + escapeHtml(en.desc || '') + '</div>' +
-            (en.country ? '<div class="desc"><strong>고려한 입맛:</strong> ' + escapeHtml(en.country) + '</div>' : '') +
-            '<div class="presentindex">' + (currentPresentIdx+1) + ' / ' + entries.length + '</div>' +
-          '</div>' +
+        '<div class="dish"' + (revealed ? ' data-revealed="true"' : '') + '>' +
+          '<div class="stamp">완성</div>' +
+          (revealed ? '' : '<div class="dome"></div>') +
+          '<div class="plate"><img class="dishimg" src="' + en.image + '" alt="' + escapeHtml(en.name) + '"></div>' +
         '</div>' +
-        '<div class="presentjudges' + (revealed ? ' show' : '') + '" id="judgesPanel">' +
-          (revealed ? judgeReactionsHtml(en) : '') +
+        '<div class="presentbody"' + (revealed ? '' : ' style="opacity:0"') + '>' +
+          (en.author ? '<div class="author">' + escapeHtml(en.author) + '</div>' : '') +
+          '<div class="name">' + escapeHtml(en.name || '이름 없는 메뉴') + '</div>' +
+          '<div class="tags">' +
+            (en.korean ? '<span class="tag">' + escapeHtml(en.korean) + '</span>' : '') +
+            (en.culture ? '<span class="tag teal">' + escapeHtml(en.culture) + '</span>' : '') +
+          '</div>' +
+          '<div class="desc">' + escapeHtml(en.desc || '') + '</div>' +
+          (en.country ? '<div class="desc"><strong>고려한 입맛:</strong> ' + escapeHtml(en.country) + '</div>' : '') +
+          '<div class="judgesRow' + (revealed ? ' show' : '') + '" id="judgesPanel">' +
+            (revealed ? judgeReactionsHtml(en) : '') +
+          '</div>' +
+          '<div class="presentindex">' + (currentPresentIdx+1) + ' / ' + entries.length + '</div>' +
         '</div>';
 
       if (!revealed){
         const dishEl = presentCard.querySelector('.dish');
         const bodyEl = presentCard.querySelector('.presentbody');
+        const judgesPanel = presentCard.querySelector('#judgesPanel');
         // 다음 프레임에 opening을 붙여서 애니메이션이 확실히 재생되게 함
         requestAnimationFrame(() => {
           dishEl.classList.add('opening');
         });
         setTimeout(() => {
           revealedIds.add(en.id);
+          // data-revealed="true"가 붙는 순간 CSS에서 돔을 display:none 처리하므로,
+          // 'opening' 클래스는 그대로 둬도(제거해도) 다시 닫히는 문제가 없음
           dishEl.setAttribute('data-revealed', 'true');
-          dishEl.classList.remove('opening');
           bodyEl.style.transition = 'opacity .35s ease';
           bodyEl.style.opacity = '1';
-          const judgesPanel = presentCard.querySelector('#judgesPanel');
           if (judgesPanel){
             judgesPanel.innerHTML = judgeReactionsHtml(en);
             requestAnimationFrame(() => judgesPanel.classList.add('show'));
           }
           renderGallery();
-        }, 950);
+        }, 1000);
       }
     }
     function openPresent(idx){ currentPresentIdx = idx; renderPresent(); present.classList.add('open'); }
