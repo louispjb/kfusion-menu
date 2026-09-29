@@ -212,7 +212,7 @@
 <body>
   <div class="topbar">
     <div>
-      <div class="badge">Result Reveal</div>
+      <div class="badge">Result Reveal · AI Judge</div>
       <h1>우리 반 <span class="cut">냉장고</span>를 부탁해</h1>
     </div>
     <div class="joinbox">
@@ -249,6 +249,7 @@
       getFirestore, collection, onSnapshot, query, orderBy, deleteDoc, doc, getDocs
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
     import { firebaseConfig } from "./firebase-config.js";
+    import { AI_JUDGE_ENDPOINT } from "./ai-judge-config.js";
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -372,6 +373,44 @@
     }
     function judgeReactionsHtml(en){ return renderJudgesHtml(evaluateMenu(en)); }
 
+    // ---------- 실시간 AI 채점 (설정 안 되어 있거나 실패/시간초과 시 규칙 기반으로 자동 대체) ----------
+    const aiResultsCache = new Map(); // entry.id -> {results, source:'ai'|'rule'}
+
+    async function fetchAiEvaluation(en){
+      if (!AI_JUDGE_ENDPOINT) return null;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 6000);
+      try {
+        const res = await fetch(AI_JUDGE_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: en.name, korean: en.korean, culture: en.culture, desc: en.desc, country: en.country,
+          }),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!data || !Array.isArray(data.judges)) return null;
+        return data.judges;
+      } catch (e){
+        clearTimeout(timer);
+        console.warn('AI 채점 서버 호출 실패, 규칙 기반으로 대체합니다:', e);
+        return null;
+      }
+    }
+
+    async function evaluateMenuWithCache(en){
+      if (aiResultsCache.has(en.id)) return aiResultsCache.get(en.id);
+      const aiJudges = await fetchAiEvaluation(en);
+      const result = aiJudges
+        ? { results: aiJudges, source: 'ai' }
+        : { results: evaluateMenu(en), source: 'rule' };
+      aiResultsCache.set(en.id, result);
+      return result;
+    }
+
     function renderGallery(){
       countLabel.textContent = entries.length + '개 완성';
       if (entries.length === 0){
@@ -436,7 +475,8 @@
     function renderPresent(){
       const en = entries[currentPresentIdx];
       if (!en){ closePresent(); return; }
-      const revealed = revealedIds.has(en.id);
+      const cached = aiResultsCache.get(en.id);
+      const revealed = revealedIds.has(en.id) && !!cached;
       presentCard.innerHTML =
         '<div class="dish"' + (revealed ? ' data-revealed="true"' : '') + '>' +
           '<div class="stamp">완성</div>' +
@@ -460,7 +500,10 @@
           '<div class="desc">' + escapeHtml(en.desc || '') + '</div>' +
           (en.country ? '<div class="desc"><strong>고려한 입맛:</strong> ' + escapeHtml(en.country) + '</div>' : '') +
           '<div class="judges' + (revealed ? ' show' : '') + '" id="judgesPanel">' +
-            (revealed ? judgeReactionsHtml(en) : '') +
+            (revealed
+              ? renderJudgesHtml(cached.results) +
+                (cached.source === 'rule' ? '<div class="jnote">⚙️ 실시간 채점 서버에 연결되지 않아 기본 채점 기준으로 평가했어요.</div>' : '')
+              : '') +
           '</div>' +
           '<div class="presentindex">' + (currentPresentIdx+1) + ' / ' + entries.length + '</div>' +
         '</div>';
@@ -468,22 +511,31 @@
       if (!revealed){
         const dishEl = presentCard.querySelector('.dish');
         const bodyEl = presentCard.querySelector('.presentbody');
+        const judgesPanel = presentCard.querySelector('#judgesPanel');
         // 다음 프레임에 opening을 붙여서 애니메이션이 확실히 재생되게 함
         requestAnimationFrame(() => {
           dishEl.classList.add('opening');
         });
+
+        const evalPromise = evaluateMenuWithCache(en);
+
         setTimeout(() => {
-          revealedIds.add(en.id);
           dishEl.setAttribute('data-revealed', 'true');
           dishEl.classList.remove('opening');
           bodyEl.style.transition = 'opacity .35s ease';
           bodyEl.style.opacity = '1';
-          const judgesPanel = presentCard.querySelector('#judgesPanel');
-          if (judgesPanel){
-            judgesPanel.innerHTML = judgeReactionsHtml(en);
-            requestAnimationFrame(() => judgesPanel.classList.add('show'));
-          }
-          renderGallery();
+          judgesPanel.innerHTML = '<div class="jloading">AI 심사위원들이 채점 중이에요…</div>';
+
+          evalPromise.then(({ results, source }) => {
+            revealedIds.add(en.id);
+            // 그 사이 다른 카드로 넘어갔다면, 지금 보이는 화면일 때만 반영
+            if (entries[currentPresentIdx] && entries[currentPresentIdx].id === en.id){
+              judgesPanel.innerHTML = renderJudgesHtml(results) +
+                (source === 'rule' ? '<div class="jnote">⚙️ 실시간 채점 서버에 연결되지 않아 기본 채점 기준으로 평가했어요.</div>' : '');
+              requestAnimationFrame(() => judgesPanel.classList.add('show'));
+            }
+            renderGallery();
+          });
         }, 950);
       }
     }
