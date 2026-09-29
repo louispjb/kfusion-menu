@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>K-퓨전 메뉴 연구소</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&family=Nanum+Pen+Script&display=swap">
+<title>우리 반 냉장고를 부탁해</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <style>
   :root{
-    --bg:#FBF6EE; --surface:#FFFFFF; --surface-2:#F3E9DA;
-    --ink:#2B2320; --ink-soft:#6B5C4F;
-    --accent:#C1432E; --accent-ink:#FFFFFF;
-    --teal:#1F7A6C; --gold:#D9A441; --line:#E7DAC6;
-    --shadow: 0 10px 28px -14px rgba(43,35,32,.35);
+    --bg:#08090B; --panel:#15171B; --panel-2:#1E2126;
+    --ink:#F2F1ED; --ink-soft:#9CA1AA;
+    --accent:#E8382A; --accent-ink:#FFFFFF;
+    --gold:#D8B979; --teal:#3FB89A; --steel:#9AA3AC; --line:#2B2E34;
+    --shadow: 0 18px 40px -18px rgba(0,0,0,.75);
   }
   *{ box-sizing:border-box; }
   html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink); }
@@ -21,37 +21,67 @@
     display:flex; flex-direction:column; gap:22px;
     max-width:640px; margin-inline:auto;
     min-height:100dvh;
+    position:relative;
+    background:
+      radial-gradient(60% 45% at 18% 0%, rgba(232,56,42,.16), transparent 60%),
+      radial-gradient(50% 40% at 100% 10%, rgba(255,255,255,.07), transparent 65%),
+      var(--bg);
   }
-  header{ display:flex; flex-direction:column; gap:6px; }
-  .eyebrow{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); font-weight:700; }
-  h1{ font-family:'Gowun Batang',serif; font-size:clamp(24px,6vw,32px); margin:0; line-height:1.25; }
-  h1 span{ color:var(--accent); }
-  .sub{ color:var(--ink-soft); font-size:14px; line-height:1.6; }
+  body::after{
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  body > *{ position:relative; z-index:1; }
+
+  header{ display:flex; flex-direction:column; gap:8px; }
+  .badge{
+    display:inline-flex; align-self:flex-start; align-items:center; gap:6px;
+    background:transparent; color:var(--steel); font-family:'Noto Sans KR',sans-serif;
+    font-size:11.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+    padding:4px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  }
+  h1{
+    font-family:'Gothic A1',sans-serif; font-weight:900;
+    font-size:clamp(28px,7.5vw,40px); margin:0; line-height:1.15; letter-spacing:-.01em;
+  }
+  h1 .cut{ position:relative; display:inline-block; color:var(--ink); }
+  h1 .cut::after{
+    content:''; position:absolute; left:-4%; right:-4%; bottom:6%; height:38%;
+    background:var(--accent); z-index:-1; transform:skewX(-10deg);
+  }
+  .tagline{
+    font-size:13px; font-weight:700; color:var(--accent); letter-spacing:.03em;
+    font-style:italic;
+  }
+  .sub{ color:var(--ink-soft); font-size:14px; line-height:1.65; }
 
   .panel{
-    background:var(--surface); border:1px solid var(--line); border-radius:18px;
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
     padding:18px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:14px;
+    position:relative; border-top:1px solid #3A3E46;
+  }
+  .panel::before{
+    content:attr(data-mission); position:absolute; top:-10px; left:16px;
+    background:var(--bg); color:var(--steel); font-family:'Gothic A1',sans-serif; font-weight:900;
+    font-size:11px; padding:2px 10px; border:1px solid var(--line); letter-spacing:.08em;
   }
   .panel h2{
-    font-size:13px; letter-spacing:.06em; text-transform:uppercase; margin:0; color:var(--ink-soft);
+    font-size:16px; margin:6px 0 0; color:var(--ink); font-weight:900; font-family:'Gothic A1',sans-serif;
     display:flex; align-items:center; gap:8px;
-  }
-  .panel h2 .num{
-    width:20px; height:20px; border-radius:50%; background:var(--accent); color:var(--accent-ink);
-    font-size:11px; display:flex; align-items:center; justify-content:center; font-weight:700;
   }
 
   canvas{
-    width:100%; aspect-ratio:4/3; border-radius:12px; background:#FFFDF9;
-    border:1px dashed var(--line); touch-action:none; cursor:crosshair; display:block;
+    width:100%; aspect-ratio:4/3; border-radius:6px; background:#EDEAE2;
+    border:1px solid var(--line); touch-action:none; cursor:crosshair; display:block;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.3);
   }
   .toolrow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .swatches{ display:flex; gap:6px; }
   .swatch{
-    width:24px; height:24px; border-radius:50%; border:2px solid var(--surface);
+    width:24px; height:24px; border-radius:50%; border:2px solid var(--panel);
     outline:1px solid var(--line); cursor:pointer; padding:0;
   }
-  .swatch[aria-pressed="true"]{ outline:2px solid var(--ink); }
+  .swatch[aria-pressed="true"]{ outline:2px solid var(--accent); }
   .colorpicker-label{
     width:26px; height:26px; border-radius:50%; overflow:hidden; display:inline-block;
     border:1px solid var(--line); cursor:pointer; position:relative;
@@ -62,20 +92,24 @@
   }
   input[type="range"]{ accent-color:var(--accent); width:84px; }
   .ghostbtn,.primarybtn{
-    font-family:inherit; border-radius:999px; border:1px solid var(--line);
-    background:var(--surface-2); color:var(--ink); font-size:13px; padding:7px 14px;
+    font-family:'Noto Sans KR',sans-serif; border-radius:4px; border:1px solid var(--line);
+    background:var(--panel-2); color:var(--ink); font-size:13px; padding:7px 14px;
     cursor:pointer; font-weight:500;
   }
   .primarybtn{
-    background:var(--accent); color:var(--accent-ink); border-color:transparent;
-    font-weight:700; padding:13px 20px; font-size:15px; width:100%;
+    font-family:'Gothic A1',sans-serif;
+    background:var(--accent); color:var(--accent-ink); border:1px solid #8f1108;
+    font-weight:900; padding:16px 20px; font-size:17px; width:100%; letter-spacing:.02em;
+    box-shadow:0 14px 26px -10px rgba(232,56,42,.55);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 3% 100%);
   }
-  .primarybtn:disabled{ opacity:.5; cursor:not-allowed; }
+  .primarybtn:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
   label{ font-size:12.5px; font-weight:700; color:var(--ink-soft); display:block; margin-bottom:5px; }
   input[type="text"], textarea{
     width:100%; font-family:'Noto Sans KR',sans-serif; font-size:15px; padding:10px 12px;
-    border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--ink);
+    border-radius:5px; border:1px solid var(--line); background:var(--bg); color:var(--ink);
   }
+  input[type="text"]::placeholder, textarea::placeholder{ color:#565A61; }
   textarea{ resize:vertical; min-height:54px; line-height:1.5; }
   .field{ margin-bottom:0; }
 
@@ -87,27 +121,28 @@
 
   .toast{
     position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(120%);
-    background:var(--ink); color:var(--bg); padding:12px 20px; border-radius:999px;
-    font-size:14px; font-weight:700; box-shadow:var(--shadow); transition:transform .3s ease;
-    z-index:10;
+    background:var(--ink); color:var(--bg); padding:12px 20px; border-radius:4px;
+    font-family:'Gothic A1',sans-serif; font-weight:900; font-size:14px; box-shadow:var(--shadow);
+    transition:transform .3s ease; z-index:10; border-left:4px solid var(--accent);
   }
   .toast.show{ transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
   <header>
-    <div class="eyebrow">글로컬라이제이션 활동 · K-Fusion Menu Lab</div>
-    <h1>내가 만드는 <span>K-퓨전</span> 메뉴</h1>
-    <p class="sub">좋아하는 한식과 관심 있는 나라의 문화를 하나로 합쳐, 세상에 없던 메뉴를 그려서 제출해보세요. 제출하면 바로 앞 화면(발표 화면)에 올라갑니다.</p>
+    <div class="badge">Class Cooking Survival · 30분 완성</div>
+    <h1>우리 반 <span class="cut">냉장고</span>를 부탁해</h1>
+    <p class="tagline">오직 맛으로, 완성한다</p>
+    <p class="sub">냉장고 속엔 한식 재료와 세계 여러 나라의 문화가 뒤섞여 있어요. 이 재료들로 세상에 없던 K-퓨전 메뉴를 완성해서 오늘의 냉장고 결과 발표에 올려보세요.</p>
   </header>
 
-  <section class="panel">
-    <h2><span class="num">1</span>메뉴 그리기</h2>
+  <section class="panel" data-mission="MISSION 01">
+    <h2>냉장고 속 재료 그리기</h2>
     <canvas id="canvas"></canvas>
     <div class="toolrow">
       <div class="swatches" id="swatches"></div>
       <label class="colorpicker-label" title="원하는 색 직접 고르기">
-        <input type="color" id="customColor" value="#c1432e">
+        <input type="color" id="customColor" value="#e8382a">
       </label>
       <label style="margin:0; display:flex; align-items:center; gap:6px; font-weight:400;">굵기
         <input type="range" id="size" min="2" max="22" value="6">
@@ -118,8 +153,12 @@
     </div>
   </section>
 
-  <section class="panel">
-    <h2><span class="num">2</span>메뉴 설명 쓰기</h2>
+  <section class="panel" data-mission="MISSION 02">
+    <h2>오늘의 메뉴판 작성</h2>
+    <div class="field">
+      <label for="author">셰프 이름(또는 모둠명)</label>
+      <input type="text" id="author" placeholder="예: 2모둠 김민준" maxlength="30">
+    </div>
     <div class="field">
       <label for="menuName">메뉴 이름</label>
       <input type="text" id="menuName" placeholder="예: 불고기 케밥" maxlength="40">
@@ -142,10 +181,10 @@
     </div>
   </section>
 
-  <button class="primarybtn" id="submitBtn" type="button">✏️ 메뉴 제출하기</button>
+  <button class="primarybtn" id="submitBtn" type="button">완성, 제출한다</button>
   <div class="status" id="statusLine"></div>
 
-  <div class="toast" id="toast">제출 완료! 발표 화면을 확인해보세요 🎉</div>
+  <div class="toast" id="toast">완성 — 결과 발표 화면을 확인하세요</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -174,14 +213,14 @@
     const ctx = canvas.getContext('2d');
     let drawing = false, currentStroke = null;
     let strokes = [];
-    let currentColor = '#C1432E';
+    let currentColor = '#E8382A';
     let eraseMode = false;
     const COLORS = [
-      '#2B2320', '#FFFFFF', '#C1432E', '#E8895F', '#D9A441', '#E8D24C',
-      '#4C9A5B', '#1F7A6C', '#3F5EA6', '#5B8CDE', '#8A4FB0', '#D767A6'
+      '#15171B', '#FFFFFF', '#E8382A', '#E87A2A', '#D8B979', '#D8CE5C',
+      '#5FA35F', '#3FB89A', '#3F6FBF', '#5F7FE0', '#8F5FC0', '#C05F8F'
     ];
 
-    function bg(){ return getComputedStyle(canvas).backgroundColor || '#FFFDF9'; }
+    function bg(){ return getComputedStyle(canvas).backgroundColor || '#EDEAE2'; }
 
     function sizeCanvas(){
       const rect = canvas.getBoundingClientRect();
@@ -241,7 +280,7 @@
     COLORS.forEach((c,i)=>{
       const b = document.createElement('button');
       b.type='button'; b.className='swatch'; b.style.background=c;
-      b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+      b.setAttribute('aria-pressed', i===2 ? 'true':'false');
       b.addEventListener('click', ()=>{
         currentColor=c; eraseMode=false; eraseBtn.setAttribute('aria-pressed','false');
         eraseBtn.style.background=''; eraseBtn.style.color='';
@@ -286,6 +325,7 @@
     }
 
     // ---------- submit ----------
+    const authorEl = document.getElementById('author');
     const menuNameEl = document.getElementById('menuName');
     const koreanEl = document.getElementById('korean');
     const cultureEl = document.getElementById('culture');
@@ -301,6 +341,12 @@
     }
 
     submitBtn.addEventListener('click', async ()=>{
+      if (!authorEl.value.trim()){
+        statusLine.textContent = '셰프 이름(또는 모둠명)을 먼저 적어주세요.';
+        statusLine.className = 'status err';
+        authorEl.focus();
+        return;
+      }
       if (strokes.length === 0 && !menuNameEl.value.trim()){
         statusLine.textContent = '그림을 그리거나 메뉴 이름을 먼저 적어주세요.';
         statusLine.className = 'status err';
@@ -314,7 +360,7 @@
       }
 
       submitBtn.disabled = true;
-      statusLine.textContent = '제출 중...';
+      statusLine.textContent = '냉장고에 담는 중...';
       statusLine.className = 'status';
 
       const dataUrl = exportSmallImage(480);
@@ -322,6 +368,7 @@
       try {
         await withTimeout(
           addDoc(submissionsRef, {
+            author: authorEl.value.trim(),
             name: menuNameEl.value.trim(),
             korean: koreanEl.value.trim(),
             culture: cultureEl.value.trim(),
@@ -333,11 +380,12 @@
           8000,
           '8초 안에 응답이 없어요. Firebase 설정(config 값, Firestore 규칙)이나 네트워크를 확인해주세요.'
         );
-        statusLine.textContent = '제출 완료!';
+        statusLine.textContent = '완성!';
         statusLine.className = 'status ok';
         showToast();
         strokes = []; redraw();
         menuNameEl.value=''; koreanEl.value=''; cultureEl.value=''; descEl.value=''; countryEl.value='';
+        // 이름은 같은 학생이 이어서 제출할 수 있으니 지우지 않고 남겨둠
         menuNameEl.focus();
       } catch(err){
         console.error(err);

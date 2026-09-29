@@ -7,10 +7,12 @@ service cloud.firestore {
       allow read: if true;
 
       allow create: if request.resource.data.keys().hasOnly(
-                        ['name', 'korean', 'culture', 'desc', 'country', 'image', 'createdAt']
+                        ['author', 'name', 'korean', 'culture', 'desc', 'country', 'image', 'createdAt']
                       )
                     && request.resource.data.name is string
                     && request.resource.data.name.size() < 60
+                    && request.resource.data.author is string
+                    && request.resource.data.author.size() < 40
                     && request.resource.data.image is string
                     && request.resource.data.image.size() < 900000; // 약 0.9MB 제한
 
