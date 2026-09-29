@@ -156,11 +156,12 @@
   }
   #present.open{ display:flex; }
   .presentcard{
-    background:var(--panel); border-radius:12px; max-width:820px; width:100%; max-height:92vh;
-    overflow:auto; box-shadow:0 40px 80px -20px rgba(0,0,0,.8); display:flex; flex-direction:column;
+    background:var(--panel); border-radius:12px; max-width:1180px; width:100%; max-height:92vh;
+    overflow:hidden; box-shadow:0 40px 80px -20px rgba(0,0,0,.8); display:flex; flex-wrap:wrap;
     border:1px solid var(--line); border-top:1px solid #3A3E46;
   }
-  .presentcard img{ width:100%; aspect-ratio:4/3; object-fit:cover; }
+  .presentmain{ flex:1 1 520px; min-width:340px; max-height:92vh; overflow:auto; display:flex; flex-direction:column; }
+  .presentmain img{ width:100%; aspect-ratio:4/3; object-fit:cover; }
   .presentbody{ padding:24px 28px 28px; display:flex; flex-direction:column; gap:10px; }
   .presentbody .name{ font-family:'Gothic A1',sans-serif; font-weight:900; font-size:32px; color:var(--ink); line-height:1.15; }
   .presentbody .desc{ font-size:16px; line-height:1.6; color:var(--ink); }
@@ -175,51 +176,80 @@
   }
   .presentindex{ font-size:13px; color:var(--ink-soft); }
 
-  /* ---------- 심사위원 리액션: 실존 인물과 무관한 원작 캐릭터 ---------- */
+  /* ---------- 심사위원 리액션: 실존 인물과 무관한 원작 3D 캐릭터, 오른쪽 빈 공간에 배치 ---------- */
   .judgesRow{
-    display:flex; flex-direction:column; gap:14px; margin-top:6px;
-    opacity:0; transform:translateY(10px); transition:opacity .5s ease, transform .5s ease;
+    flex:1 1 320px; min-width:260px; max-height:92vh; overflow:auto;
+    display:flex; flex-direction:column; justify-content:center; align-items:center; gap:30px;
+    padding:32px 22px; background:
+      radial-gradient(circle at 50% 0%, rgba(255,255,255,.06), transparent 55%),
+      linear-gradient(180deg, var(--panel-2), var(--panel));
+    border-left:1px solid var(--line);
+    opacity:0; transition:opacity .4s ease;
   }
-  .judgesRow.show{ opacity:1; transform:translateY(0); }
-  .judge{ display:flex; gap:14px; align-items:center; }
-  .hchar{ position:relative; width:64px; height:82px; flex:none; }
+  .judgesRow.show{ opacity:1; }
+  .judge{
+    display:flex; flex-direction:column; align-items:center; gap:12px; max-width:250px;
+    opacity:0; transform:translateY(18px) scale(.82);
+    transition:opacity .5s cubic-bezier(.3,.9,.35,1.3), transform .55s cubic-bezier(.3,.9,.35,1.3);
+  }
+  .judgesRow.show .judge{ opacity:1; transform:translateY(0) scale(1); }
+  .judgesRow.show .judge:nth-child(2){ transition-delay:.22s; }
+
+  .hchar{ position:relative; width:112px; height:150px; flex:none; filter:drop-shadow(0 14px 16px rgba(0,0,0,.4)); }
   .hchar-head{
-    position:relative; width:44px; height:44px; border-radius:50%; margin:0 auto;
-    background:var(--skin,#e7bd90); box-shadow:0 6px 10px rgba(0,0,0,.35);
+    position:relative; width:82px; height:82px; border-radius:50%; margin:0 auto;
+    background:
+      radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), rgba(255,255,255,0) 42%),
+      radial-gradient(circle at 65% 78%, rgba(0,0,0,.18), transparent 55%),
+      var(--skin,#e7bd90);
+    box-shadow: inset 0 -6px 10px rgba(0,0,0,.15), inset 0 5px 8px rgba(255,255,255,.3);
   }
   .hchar-hair{
-    position:absolute; top:-6px; left:-3px; right:-3px; height:24px;
-    border-radius:50% 50% 30% 30% / 65% 65% 20% 20%; background:var(--hair,#2b2b2b);
+    position:absolute; top:-10px; left:-6px; right:-6px; height:44px;
+    border-radius:50% 50% 35% 35% / 70% 70% 25% 25%;
+    background:
+      radial-gradient(circle at 35% 25%, rgba(255,255,255,.45), rgba(255,255,255,0) 45%),
+      var(--hair,#2b2b2b);
   }
-  .hchar-eyes{ position:absolute; top:44%; left:50%; transform:translateX(-50%); display:flex; gap:9px; }
-  .hchar-eyes span{ width:4.5px; height:4.5px; border-radius:50%; background:#232323; }
+  .hchar-cheeks{ position:absolute; top:56%; left:50%; transform:translateX(-50%); display:flex; gap:44px; }
+  .hchar-cheeks span{ width:12px; height:8px; border-radius:50%; background:#ff9a8b; opacity:.55; }
+  .hchar-eyes{ position:absolute; top:42%; left:50%; transform:translateX(-50%); display:flex; gap:16px; }
+  .hchar-eyes span{
+    position:relative; width:10px; height:12px; border-radius:50%; background:#232323;
+  }
+  .hchar-eyes span::after{
+    content:''; position:absolute; top:1.5px; left:1.5px; width:3.5px; height:3.5px; border-radius:50%; background:#fff;
+  }
   .hchar-mouth{
-    position:absolute; top:64%; left:50%; transform:translateX(-50%);
-    width:12px; height:2px; background:#232323; border-radius:2px;
+    position:absolute; top:66%; left:50%; transform:translateX(-50%);
+    width:14px; height:2.5px; background:#5a3f36; border-radius:2px;
   }
   .hchar.mood-good .hchar-mouth{
-    width:16px; height:9px; background:transparent; border:2px solid #232323; border-top:none;
-    border-radius:0 0 10px 10px;
+    width:20px; height:12px; background:transparent; border:3px solid #5a3f36; border-top:none;
+    border-radius:0 0 12px 12px;
   }
   .hchar-body{
-    width:60px; height:42px; margin:6px auto 0; border-radius:16px 16px 6px 6px;
-    background:var(--suit,#333); box-shadow:0 8px 14px rgba(0,0,0,.35); position:relative;
+    width:96px; height:66px; margin:8px auto 0; border-radius:38px 38px 16px 16px;
+    background:
+      radial-gradient(circle at 35% 20%, rgba(255,255,255,.35), rgba(255,255,255,0) 45%),
+      var(--suit,#333);
+    box-shadow: inset 0 -8px 14px rgba(0,0,0,.25), 0 10px 16px rgba(0,0,0,.3); position:relative;
   }
   .hchar-body::before{
-    content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
-    width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent;
-    border-top:11px solid var(--shirt,#EDEDED);
+    content:''; position:absolute; top:2px; left:50%; transform:translateX(-50%);
+    width:22px; height:22px; border-radius:50%;
+    background:var(--shirt,#EDEDED); box-shadow:inset 0 2px 4px rgba(0,0,0,.15);
   }
-  .jinfo{ flex:1; }
-  .jname{ font-family:'Gothic A1',sans-serif; font-weight:900; font-size:14px; color:var(--ink); }
-  .jrole{ font-weight:600; font-size:11px; color:var(--ink-soft); }
   .jquote{
-    position:relative; background:var(--panel-2); border-radius:12px; padding:9px 13px; margin-top:4px;
-    font-size:13px; color:var(--ink); line-height:1.5;
+    position:relative; background:var(--panel-2); border-radius:16px; padding:12px 16px;
+    font-size:13.5px; color:var(--ink); line-height:1.55; text-align:center; box-shadow:0 8px 18px rgba(0,0,0,.35);
   }
   .jquote::before{
-    content:''; position:absolute; top:50%; left:-6px; transform:translateY(-50%);
-    border-top:6px solid transparent; border-bottom:6px solid transparent; border-right:6px solid var(--panel-2);
+    content:''; position:absolute; top:-7px; left:50%; transform:translateX(-50%);
+    border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:7px solid var(--panel-2);
+  }
+  @media (max-width: 760px){
+    .judgesRow{ border-left:none; border-top:1px solid var(--line); }
   }
 </style>
 </head>
@@ -357,15 +387,13 @@
             '<div class="hchar ' + moodClass + '" style="' + style + '">' +
               '<div class="hchar-head">' +
                 '<div class="hchar-hair"></div>' +
+                '<div class="hchar-cheeks"><span></span><span></span></div>' +
                 '<div class="hchar-eyes"><span></span><span></span></div>' +
                 '<div class="hchar-mouth"></div>' +
               '</div>' +
               '<div class="hchar-body"></div>' +
             '</div>' +
-            '<div class="jinfo">' +
-              '<div class="jname">' + j.name + ' <span class="jrole">· ' + meta.role + '</span></div>' +
-              '<div class="jquote">“' + escapeHtml(j.quote) + '”</div>' +
-            '</div>' +
+            '<div class="jquote">“' + escapeHtml(j.quote) + '”</div>' +
           '</div>'
         );
       }).join('');
@@ -431,24 +459,26 @@
       if (!en){ closePresent(); return; }
       const revealed = revealedIds.has(en.id);
       presentCard.innerHTML =
-        '<div class="dish"' + (revealed ? ' data-revealed="true"' : '') + '>' +
-          '<div class="stamp">완성</div>' +
-          (revealed ? '' : '<div class="dome"></div>') +
-          '<div class="plate"><img class="dishimg" src="' + en.image + '" alt="' + escapeHtml(en.name) + '"></div>' +
+        '<div class="presentmain">' +
+          '<div class="dish"' + (revealed ? ' data-revealed="true"' : '') + '>' +
+            '<div class="stamp">완성</div>' +
+            (revealed ? '' : '<div class="dome"></div>') +
+            '<div class="plate"><img class="dishimg" src="' + en.image + '" alt="' + escapeHtml(en.name) + '"></div>' +
+          '</div>' +
+          '<div class="presentbody"' + (revealed ? '' : ' style="opacity:0"') + '>' +
+            (en.author ? '<div class="author">' + escapeHtml(en.author) + '</div>' : '') +
+            '<div class="name">' + escapeHtml(en.name || '이름 없는 메뉴') + '</div>' +
+            '<div class="tags">' +
+              (en.korean ? '<span class="tag">' + escapeHtml(en.korean) + '</span>' : '') +
+              (en.culture ? '<span class="tag teal">' + escapeHtml(en.culture) + '</span>' : '') +
+            '</div>' +
+            '<div class="desc">' + escapeHtml(en.desc || '') + '</div>' +
+            (en.country ? '<div class="desc"><strong>고려한 입맛:</strong> ' + escapeHtml(en.country) + '</div>' : '') +
+            '<div class="presentindex">' + (currentPresentIdx+1) + ' / ' + entries.length + '</div>' +
+          '</div>' +
         '</div>' +
-        '<div class="presentbody"' + (revealed ? '' : ' style="opacity:0"') + '>' +
-          (en.author ? '<div class="author">' + escapeHtml(en.author) + '</div>' : '') +
-          '<div class="name">' + escapeHtml(en.name || '이름 없는 메뉴') + '</div>' +
-          '<div class="tags">' +
-            (en.korean ? '<span class="tag">' + escapeHtml(en.korean) + '</span>' : '') +
-            (en.culture ? '<span class="tag teal">' + escapeHtml(en.culture) + '</span>' : '') +
-          '</div>' +
-          '<div class="desc">' + escapeHtml(en.desc || '') + '</div>' +
-          (en.country ? '<div class="desc"><strong>고려한 입맛:</strong> ' + escapeHtml(en.country) + '</div>' : '') +
-          '<div class="judgesRow' + (revealed ? ' show' : '') + '" id="judgesPanel">' +
-            (revealed ? judgeReactionsHtml(en) : '') +
-          '</div>' +
-          '<div class="presentindex">' + (currentPresentIdx+1) + ' / ' + entries.length + '</div>' +
+        '<div class="judgesRow' + (revealed ? ' show' : '') + '" id="judgesPanel">' +
+          (revealed ? judgeReactionsHtml(en) : '') +
         '</div>';
 
       if (!revealed){
