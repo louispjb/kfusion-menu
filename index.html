@@ -7,11 +7,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <style>
   :root{
-    --bg:#08090B; --panel:#15171B; --panel-2:#1E2126;
-    --ink:#F2F1ED; --ink-soft:#9CA1AA;
+    --bg:#F7F3EC; --panel:#FFFFFF; --panel-2:#F1EBDD;
+    --ink:#2A2620; --ink-soft:#7A756C;
     --accent:#E8382A; --accent-ink:#FFFFFF;
-    --gold:#D8B979; --teal:#3FB89A; --steel:#9AA3AC; --line:#2B2E34;
-    --shadow: 0 18px 40px -18px rgba(0,0,0,.75);
+    --gold:#B8862E; --teal:#1E8F76; --steel:#8B8577; --line:#E4DFD2;
+    --shadow: 0 12px 28px -14px rgba(0,0,0,.18);
   }
   *{ box-sizing:border-box; }
   html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink); }
@@ -23,13 +23,8 @@
     min-height:100dvh;
     position:relative;
     background:
-      radial-gradient(60% 45% at 18% 0%, rgba(232,56,42,.16), transparent 60%),
-      radial-gradient(50% 40% at 100% 10%, rgba(255,255,255,.07), transparent 65%),
+      radial-gradient(60% 45% at 18% 0%, rgba(232,56,42,.08), transparent 60%),
       var(--bg);
-  }
-  body::after{
-    content:''; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.05; mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   body > *{ position:relative; z-index:1; }
 
@@ -58,7 +53,7 @@
   .panel{
     background:var(--panel); border:1px solid var(--line); border-radius:10px;
     padding:18px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:14px;
-    position:relative; border-top:1px solid #3A3E46;
+    position:relative;
   }
   .panel::before{
     content:attr(data-mission); position:absolute; top:-10px; left:16px;
