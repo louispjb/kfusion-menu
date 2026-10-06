@@ -155,10 +155,19 @@
     overflow:auto; box-shadow:0 40px 80px -20px rgba(0,0,0,.35); display:flex; flex-direction:column;
     border:1px solid var(--line);
   }
-  .presentcard img{ width:100%; aspect-ratio:4/3; object-fit:cover; }
-  .presentbody{ padding:24px 28px 28px; display:flex; flex-direction:column; gap:10px; }
-  .presentbody .name{ font-family:'Gothic A1',sans-serif; font-weight:900; font-size:32px; color:var(--ink); line-height:1.15; }
-  .presentbody .desc{ font-size:16px; line-height:1.6; color:var(--ink); }
+  /* 발표 팝업: 가로 배치(그림 왼쪽 정사각형 + 정보 오른쪽). 화면 높이에 맞춰 스크롤/잘림 없이 한눈에 */
+  .presentcard{ max-width:1240px; height:min(88vh, 780px); max-height:none; flex-direction:row; overflow:hidden; }
+  .presentcard .dish{ flex:none; width:auto; height:100%; aspect-ratio:1/1; }
+  .presentcard .plate{ width:84%; }
+  .presentbody{ flex:1; min-width:0; padding:36px 40px; display:flex; flex-direction:column; justify-content:center; gap:14px; overflow:auto; }
+  .presentbody .name{ font-family:'Gothic A1',sans-serif; font-weight:900; font-size:clamp(30px,3.4vw,48px); color:var(--ink); line-height:1.15; }
+  .presentbody .desc{ font-size:clamp(17px,1.6vw,22px); line-height:1.65; color:var(--ink); }
+  .presentbody .tag{ font-size:14px; padding:4px 12px; }
+  @media (max-aspect-ratio: 1/1){
+    .presentcard{ flex-direction:column; height:auto; max-height:92vh; }
+    .presentcard .dish{ width:min(100%, 52vh); height:auto; align-self:center; }
+    .presentbody{ padding:20px 24px; }
+  }
   .presentnav{
     position:absolute; top:50%; transform:translateY(-50%); background:var(--panel); border:1px solid var(--line);
     width:48px; height:48px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:var(--shadow); color:var(--ink);
@@ -191,7 +200,10 @@
 
   <div class="galleryhead">
     <span class="count" id="countLabel">0개 완성</span>
-    <button class="resetbtn" id="resetAllBtn" type="button">전체 삭제</button>
+    <div style="display:flex; gap:8px;">
+      <button class="resetbtn" id="soundToggleBtn" type="button">🔊 효과음 켜짐</button>
+      <button class="resetbtn" id="resetAllBtn" type="button">전체 삭제</button>
+    </div>
   </div>
 
   <div class="gallery" id="gallery">
@@ -247,6 +259,43 @@
 
     function escapeHtml(str){
       return (str||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // ---------- 리빌 효과음: 파일 없이 브라우저에서 즉석으로 만드는 짧은 챠임(저작권 걱정 없음) ----------
+    let soundOn = localStorage.getItem('kfusion_sound_off') !== '1';
+    let audioCtx = null;
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+    function updateSoundBtn(){
+      soundToggleBtn.textContent = soundOn ? '🔊 효과음 켜짐' : '🔇 효과음 꺼짐';
+    }
+    updateSoundBtn();
+    soundToggleBtn.addEventListener('click', () => {
+      soundOn = !soundOn;
+      localStorage.setItem('kfusion_sound_off', soundOn ? '0' : '1');
+      updateSoundBtn();
+    });
+    function playRevealSound(){
+      if (!soundOn) return;
+      try{
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        // 살짝 통통 튀는 "짜잔~" 느낌의 4음 코드 (C5-E5-G5-C6)
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          const start = now + i * 0.085;
+          gain.gain.setValueAtTime(0, start);
+          gain.gain.linearRampToValueAtTime(0.22, start + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
+          osc.connect(gain).connect(audioCtx.destination);
+          osc.start(start);
+          osc.stop(start + 0.45);
+        });
+      } catch(e){ console.warn('효과음 재생 실패:', e); }
     }
 
     function renderGallery(){
@@ -328,6 +377,7 @@
       if (!revealed){
         const dishEl = presentCard.querySelector('.dish');
         const bodyEl = presentCard.querySelector('.presentbody');
+        playRevealSound();
         // 다음 프레임에 opening을 붙여서 애니메이션이 확실히 재생되게 함
         requestAnimationFrame(() => {
           dishEl.classList.add('opening');
